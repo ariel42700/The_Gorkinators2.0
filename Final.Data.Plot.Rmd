@@ -86,7 +86,7 @@ adjusted.debt <- debt.with.cpi %>%
         Other = (Other / All.Items.CPI) * 100,
         Total = Mortgage + HE.Revolving + Auto.Loan + Credit.Card + Other
     ) %>%
-    select(Year, Quarter, Mortgage, HE.Revolving, Auto.Loan, Credit.Card, Student.Loan, Other, Total)
+    select(-(Housing.CPI:Auto.CPI))
 
 head(adjusted.debt)
 ```
@@ -103,10 +103,34 @@ final.df <- adjusted.debt %>%
 ```{r}
 library(plotly)
 
-plot_ly() %>%
-    add_lines(data = final.df,
+y.axis.2 <- list(
+    overlaying = 'y',
+    side = 'right',
+    title = 'Salary Axis'
+)
+
+plot_ly(data = final.df) %>%
+    add_lines(
               x = ~Year.Quarter, 
-              y = ~Mortgage)
+              y = ~Mortgage,
+              name = 'Mortgage') %>%
+    add_lines(
+              x = ~Year.Quarter, 
+              y = ~Auto.Loan,
+              name = 'Auto Loans') %>%
+    add_lines(x = ~Year.Quarter,
+              y =~Salary,
+              name = 'Salary',
+              yaxis = 'y2') %>%
+    add_lines(x = ~Year.Quarter,
+              y =~Student.Loan,
+              name = 'Student Loans') %>%
+    add_lines(x = ~Year.Quarter,
+              y =~Credit.Card,
+              name = 'Credit Cards') %>%
+    layout(
+        yaxis2 = y.axis.2
+    )
 ```
 
 
