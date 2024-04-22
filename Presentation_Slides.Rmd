@@ -1,0 +1,279 @@
+---
+title: "Interest Rates and Debt"
+author: "Owen Gallagher, Ariel Lutati, Duc Nguyen"
+date: "`r Sys.Date()`"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(plotly)
+```
+
+```{r, results='hide'}
+final.df <- read.csv("~/Important/Stat_633_Data_Viz/Presentation_2/Debt_Project/final_df.csv")
+```
+
+
+
+## Guiding Question and Hypothesis
+
+We will explore how interest rate levels of  Mortgages, Credit Cards, Auto Loans,and Student Loans effect the 
+
+- Total Dollar Amount of Loans
+- Number of Loans
+- Delinquency of Loan Payments 
+
+Our initial hypothesis is that high level of interest rates will lead to
+
+- Lower Total Dollar Amount of Loans
+- Lower Number of Loans
+- Higher Delinquency of Loan Payments 
+for each of the 4 types of loans we are analyzing.
+
+## Data Background
+
+- **Data Overview**
+    - Have quarterly data on the interest rates, debt statistics, salary, and CPI dating back to 2003.
+- **Data Collection**
+    - The data pertaining to debt was collected from the New York Fed Center for Microeconomic Data
+    - Consumer Price Index (CPI) data was collected from the US Bureau of Labor Statistics
+    - The interest rates for Mortgages, 48 Month Auto Loans, and the Credit Card data was collected from the St. Louis Federal Reserve
+    - The student loan interest rate data was collected from the FASFA website
+
+## Data Manipulation
+
+- All tables were joined together on the Year and Quarter
+- Had to adjust the *Total Dollar Loan Amount* to account for inflation. This was done by
+
+Adjusted Amount = (Unadjusted Amount / CPI for Quarter) * 100
+
+- We had monthly CPI data and took average across months to convert the CPI data to quarterly. 
+
+## Plot
+
+
+## Plot
+
+
+## Interest Rates and 90 Day Deliquency
+
+
+```{r, warning=FALSE}
+
+## Make Mortgage Plot
+mortgage.plot <- plot_ly(final.df) %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Percent.of.Mortgage.90.days.delinquent,
+              color = I('blue'),
+              text = ~paste('Type: Mortgage', '<br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           '90 Days Delinquent (%):', Percent.of.Mortgage.90.days.delinquent),
+              hoverinfo = 'text',
+              legendgroup = 'Percent 90 days delinquent',
+              name = 'Percent 90 days delinquent') %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Mortgage.Rate,
+              color = I('orange'),
+              text = ~paste('Type: Mortgage <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           'Mortgage Rate:', Mortgage.Rate),
+              hoverinfo = 'text',
+              name = 'Mortgage Rate') %>%
+    layout(
+        yaxis = list(title = 'Percent'),
+        xaxis = list(
+            title = 'Year',
+            ticktext = list('2003', '2005' ,'2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023'),
+            tickvals = list('2003 Q1', '2005 Q1' ,'2007 Q1', '2009 Q1', '2011 Q1', '2013 Q1', '2015 Q1', '2017 Q1', '2019 Q1', '2021 Q1', '2023 Q1')
+        )
+    )
+
+### Make Auto Plot
+auto.plot <- plot_ly(final.df) %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Percent.of.Auto.90.days.delinquent,
+              color = I('blue'),
+              text = ~paste('Type: Auto <br>',
+                            'Year', Year, '<br>',
+                           'Quarter', Quarter, '<br>',
+                           '90 Days Delinquent (%)', Percent.of.Auto.90.days.delinquent),
+              hoverinfo = 'text',
+              name = 'Percent 90 days delinquent',
+              legendgroup = 'Percent 90 days delinquent',
+              showlegend = FALSE) %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Auto.Rates.48.mo,
+              color = I('red'),
+              text = ~paste('Type: Auto <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           'Auto Rate:', Auto.Rates.48.mo),
+              hoverinfo = 'text',
+              name = 'Auto Rate') %>%
+    layout(
+        yaxis = list(title = 'Percent'),
+        xaxis = list(
+            title = 'Year',
+            ticktext = list('2003', '2005' ,'2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023'),
+            tickvals = list('2003 Q1', '2005 Q1' ,'2007 Q1', '2009 Q1', '2011 Q1', '2013 Q1', '2015 Q1', '2017 Q1', '2019 Q1', '2021 Q1', '2023 Q1')
+        )
+    )
+
+## Make student loan plott
+student.loan.plot <- plot_ly(final.df) %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Percent.of.Student.Loan.90.days.delinquent,
+              color = I('blue'),
+              text = ~paste('Type: Student Loan <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           '90 Days Delinquent (%):', Percent.of.Student.Loan.90.days.delinquent),
+              hoverinfo = 'text',
+              legendgroup = 'Percent 90 days delinquent',
+              showlegend = FALSE,
+              name = 'Percent 90 days delinquent') %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Student.Loan.Rate,
+              color = I('purple'),
+              text = ~paste('Type: Student Loan <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           'Student Loan Rate:', Student.Loan.Rate),
+              hoverinfo = 'text',
+              name = 'Student Loan Rate') %>%
+    layout(
+        yaxis = list(title = 'Percent'),
+        xaxis = list(
+            title = 'Year',
+            ticktext = list('2003', '2005' ,'2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023'),
+            tickvals = list('2003 Q1', '2005 Q1' ,'2007 Q1', '2009 Q1', '2011 Q1', '2013 Q1', '2015 Q1', '2017 Q1', '2019 Q1', '2021 Q1', '2023 Q1')
+        )
+    )
+
+## Make credit card plot
+credit.card.plot <- plot_ly(final.df) %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~Percent.of.CC.90.days.delinquent,
+              color = I('blue'),
+              text = ~paste('Type: Credit Card <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           '90 Days Delinquent (%):', Percent.of.CC.90.days.delinquent),
+              hoverinfo = 'text',
+              legendgroup = 'Percent 90 days delinquent',
+              showlegend = FALSE,
+              name = 'Percent 90 days delinquent') %>%
+    add_lines(x = ~Year.Quarter,
+              y = ~CC.Rates,
+              color = I('darkgreen'),
+              text = ~paste('Type: Credit Card <br>',
+                            'Year:', Year, '<br>',
+                           'Quarter:', Quarter, '<br>',
+                           'Credit Card Rate:', CC.Rates),
+              hoverinfo = 'text',
+              name = 'Credit Card Rate') %>%
+    layout(
+        yaxis = list(title = 'Percent'),
+        xaxis = list(
+            title = 'Year',
+            ticktext = list('2003', '2005' ,'2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023'),
+            tickvals = list('2003 Q1', '2005 Q1' ,'2007 Q1', '2009 Q1', '2011 Q1', '2013 Q1', '2015 Q1', '2017 Q1', '2019 Q1', '2021 Q1', '2023 Q1')
+        )
+    )
+
+#combine plots
+delinq.plot <- subplot(mortgage.plot, credit.card.plot, auto.plot, student.loan.plot, nrows = 4, shareX = T, margin = 0.01, heights = c(.25,.25,.25,.25), widths = .75)
+
+annotations = list( 
+
+  list( 
+
+    x = 0,  
+
+    y = .85,  
+
+    text = "Mortgage Plot",  
+
+    xref = "paper",  
+
+    yref = "paper",  
+
+    xanchor = "center",  
+
+    yanchor = "bottom",  
+
+    showarrow = FALSE 
+
+  ),  
+
+  list( 
+
+    x = 0,  
+
+    y = .6,  
+
+    text = "Credit Card Plot",  
+
+    xref = "paper",  
+
+    yref = "paper",  
+
+    xanchor = "center",  
+
+    yanchor = "bottom",  
+
+    showarrow = FALSE 
+
+  ),  
+
+  list( 
+
+    x = 0,  
+
+    y = 0.33,  
+
+    text = "Auto Plot",  
+
+    xref = "paper",  
+
+    yref = "paper",  
+
+    xanchor = "center",  
+
+    yanchor = "bottom",  
+
+    showarrow = FALSE 
+
+  ),
+
+  list( 
+
+    x = 0,  
+
+    y = 0.075,  
+
+    text = "Student Loan Plot",  
+
+    xref = "paper",  
+
+    yref = "paper",  
+
+    xanchor = "center",  
+
+    yanchor = "bottom",  
+
+    showarrow = FALSE 
+
+  ))
+
+
+delinq.plot <- delinq.plot %>%layout(annotations = annotations) 
+delinq.plot
+
+```
+
+
