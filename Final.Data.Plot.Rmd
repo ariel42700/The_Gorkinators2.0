@@ -90,6 +90,7 @@ adjusted.debt <- debt.with.cpi %>%
 
 head(adjusted.debt)
 ```
+## Include Salary
 
 ```{r}
 salary <- read.csv('Salary.csv')
@@ -99,6 +100,28 @@ final.df <- adjusted.debt %>%
     mutate(Year.Quarter = paste(Year, Quarter))
 ```
 
+
+## Include Rates
+
+```{r}
+auto.rates <- read.csv('auto_rates.csv')
+mortgage.rates <- read.csv('mortgage_rates.csv')
+credit.card.rates <- read.csv('credit_card_rates.csv')
+student.loans <- read.csv('student_loans.csv')
+
+rates <- mortgage.rates %>%
+    left_join(auto.rates, join_by(Year == Year, Quarter == Quarter)) %>%
+    left_join(credit.card.rates, join_by(Year == Year, Quarter == Quarter)) %>%
+    left_join(student.loans, join_by(Year == Year, Quarter == Quarter)) %>%
+    mutate(Mortgage.Rate = round(Mortgage.Rate,2))
+
+head(rates)
+```
+
+
+
+
+## Plots
 
 ```{r}
 library(plotly)
@@ -133,4 +156,36 @@ plot_ly(data = final.df) %>%
     )
 ```
 
+
+```{r}
+plot_ly(data = final.df) %>%
+    add_lines(
+        x =~Year.Quarter,
+        y = ~CC.Delinquency.30.days.late.Percent,
+        name = '30 days late'
+    ) %>%
+    add_lines(
+        x =~Year.Quarter,
+        y = ~CC.Delinquency.60.days.late.Percent,
+        name = '60 days late'
+    ) %>%
+    add_lines(
+        x =~Year.Quarter,
+        y = ~CC.Delinquency.90.days.late.Percent,
+        name = '90 days late'
+    ) %>%
+    add_lines(
+        x =~Year.Quarter,
+        y = ~CC.Delinquency.120.or.moredays.late.Percent,
+        name = '120 days or more'
+    )
+```
+
+
+
+## Panel View
+
+```{r}
+
+```
 
