@@ -1,0 +1,112 @@
+---
+title: "Presentation 2"
+author: "Owen Gallagher"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(reshape2)
+```
+
+# CPI Data
+
+```{r}
+setwd('~/Important/Stat_633_Data_Viz/Presentation_2/Debt_Project/')
+
+# Read data in
+housing.cpi <- read.csv('CPI_Housing_Final.csv')
+all.items.cpi <- read.csv('CPI_All_Items.csv')
+education.cpi <- read.csv('CPI_Education_Final.csv')
+used.cars.cpi <- read.csv('CPI_Used_Cars.csv', col.names = c('Year', 'Q1.Used', 'Q2.Used', 'Q3.Used', 'Q4.Used'))
+new.cars.cpi <- read.csv('New_Cars_CPI.csv',col.names = c('Year', 'Q1.New', 'Q2.New', 'Q3.New', 'Q4.New'))
+car.sales <- read.csv('cars_sales.csv')
+
+# Select only relevant parts
+car.sales <- car.sales %>% select(Year, Percent.New, Percent.Used)
+
+# Melt data so that CPI data is in same form as the debt data
+housing.cpi <- melt(housing.cpi, id.vars = 'Year', variable.name = 'Quarter', value.name = 'Housing.CPI') %>% arrange(Year)
+all.items.cpi <- melt(all.items.cpi, id.vars = 'Year', variable.name = 'Quarter', value.name = 'All.Items.CPI') %>% arrange(Year)
+education.cpi <- melt(education.cpi, id.vars = 'Year', variable.name = 'Quarter', value.name = 'Education.CPI') %>% arrange(Year)
+
+#Join all car data
+cars.cpi.draft <- used.cars.cpi %>%
+    left_join(new.cars.cpi, join_by(Year == Year)) %>%
+    left_join(car.sales, join_by(Year == Year))
+
+# Created a weighted average CPI
+cars.cpi <- cars.cpi.draft %>%
+    mutate(Q1 = Q1.Used * Percent.Used + Q1.New * Percent.New,
+           Q2 = Q2.Used * Percent.Used + Q2.New * Percent.New,
+           Q3 = Q3.Used * Percent.Used + Q3.New * Percent.New,
+           Q4 = Q4.Used * Percent.Used + Q4.New * Percent.New) %>%
+    select(Year, Q1, Q2, Q3, Q4) %>%
+    melt(id.vars = 'Year', variable.name = 'Quarter', value.name = 'Auto.CPI') %>% arrange(Year)
+
+
+
+# Join all the cpi into one dataset
+cpi.data <- housing.cpi %>%
+    left_join(all.items.cpi, by = join_by(Year == Year, Quarter == Quarter)) %>% 
+    left_join(education.cpi, by = join_by(Year == Year, Quarter == Quarter)) %>%
+    left_join(cars.cpi, by = join_by(Year == Year, Quarter == Quarter))
+
+#Cut off 2024 where there is no data
+cpi.data <- cpi.data[1:84,]
+
+tail(cpi.data)
+```
+
+# Read in Total Debt
+
+```{r}
+setwd('~/Important/Stat_633_Data_Viz/Presentation_2/Debt_Project/')
+
+unadjusted.debt <- read.csv('total_debt.csv')
+
+debt.with.cpi <- unadjusted.debt %>%
+    left_join(cpi.data, by = join_by(Year == Year, Quarter == Quarter))
+
+head(debt.with.cpi)
+```
+
+# Adjust for inflation
+
+```{r}
+adjusted.debt <- debt.with.cpi %>%
+    mutate(
+        Mortgage = (Mortgage / Housing.CPI) * 100,
+        HE.Revolving = (HE.Revolving / Housing.CPI) * 100,
+        Auto.Loan = (Auto.Loan / Auto.CPI) * 100,
+        Student.Loan = (Student.Loan / Education.CPI) * 100,
+        Credit.Card = (Credit.Card / All.Items.CPI) * 100,
+        Other = (Other / All.Items.CPI) * 100,
+        Total = Mortgage + HE.Revolving + Auto.Loan + Credit.Card + Other
+    ) %>%
+    select(Year, Quarter, Mortgage, HE.Revolving, Auto.Loan, Credit.Card, Student.Loan, Other, Total)
+
+head(adjusted.debt)
+```
+
+```{r}
+salary <- read.csv('Salary.csv')
+
+final.df <- adjusted.debt %>%
+    left_join(salary, by = join_by(Year == Year)) %>%
+    mutate(Year.Quarter = paste(Year, Quarter))
+```
+
+
+```{r}
+library(plotly)
+
+plot_ly() %>%
+    add_lines(data = final.df,
+              x = ~Year.Quarter, 
+              y = ~Mortgage)
+```
+
+
