@@ -11,58 +11,144 @@ library(tidyverse)
 library(plotly)
 ```
 
-```{r, results='hide'}
-final.df <- read.csv("~/Important/Stat_633_Data_Viz/Presentation_2/Debt_Project/final_df.csv")
-```
+## Research Question
 
+What impact do interest rates have on loans in the United States?
 
+## Research Objectivse
 
-## Guiding Question and Hypothesis
+- Investigate the correlation between interest rates and the number of loans issued in each category.
+- Analyze how variations in interest rates influence the total dollar amount of issued loans for each loan category.
+- Assess the impact of rising and falling interest rates on the delinquency rates of loan payments.
 
-We will explore how interest rate levels of  Mortgages, Credit Cards, Auto Loans,and Student Loans effect the 
+## Hypothesis
 
-- Total Dollar Amount of Loans
-- Number of Loans
-- Delinquency of Loan Payments 
+Our hypothesis posits that higher interest rates will result in:
 
-Our initial hypothesis is that high level of interest rates will lead to
+- A decrease in total dollar amount of loans.
+- A decrease in the number of loans.
+- An increase in the delinquency of loan payments.
 
-- Lower Total Dollar Amount of Loans
-- Lower Number of Loans
-- Higher Delinquency of Loan Payments 
-for each of the 4 types of loans we are analyzing.
+These effects are expected to be observed across four types of loans: mortgages, credit cards, auto loans, and student loans.
 
-## Data Background
+## Data Overview
 
-- **Data Overview**
-    - Have quarterly data on the interest rates, debt statistics, salary, and CPI dating back to 2003.
-- **Data Collection**
-    - The data pertaining to debt was collected from the New York Fed Center for Microeconomic Data
-    - Consumer Price Index (CPI) data was collected from the US Bureau of Labor Statistics
-    - The interest rates for Mortgages, 48 Month Auto Loans, and the Credit Card data was collected from the St. Louis Federal Reserve
-    - The student loan interest rate data was collected from the FASFA website
+Quarterly datasets include:
+
+- Interest Rates: Mortgages, 48-month auto loans, credit cards (Federal Reserve Bank of St. Louis).
+- Student loans (Federal Student Aid).
+- Debt Statistics (New York Fed's Center for Microeconomic Data).
+- Consumer Price Index CPI (U.S. Bureau of Labor Statistics).
+
+Coverage period: From 2003 to 2023.
+
 
 ## Data Manipulation
 
-- All tables were joined together on the Year and Quarter
-- Had to adjust the *Total Dollar Loan Amount* to account for inflation. This was done by
+- All tables were joined together based on 'Year' and 'Quarter'
+- To account for inflation, the Total Dollar Loan Amount was adjusted using the following formula:
 
 Adjusted Amount = (Unadjusted Amount / CPI for Quarter) * 100
 
-- We had monthly CPI data and took average across months to convert the CPI data to quarterly. 
+- Monthly Consumer Price Index (CPI) was averaged across months to derive quarterly figures.
 
-## Plot
+## Analysis of Loan Amounts and Interest Rates
+
+```{r warning=F}
+library(plotly)
+library(dplyr)
+
+final.df <- read.csv('~/Important/Stat_633_Data_Viz/Presentation_2/Debt_Project/final_df.csv')
+
+final.df$Year <- as.numeric(substr(final.df$Year.Quarter, 1, 4))
+
+annual_data <- final.df %>%
+  group_by(Year) %>%
+  summarise(
+    Avg_Mortgage = mean(Mortgage, na.rm = TRUE),
+    Avg_Mortgage_Rate = mean(Mortgage.Rate, na.rm = TRUE),
+    Avg_Auto_Loan = mean(Auto.Loan, na.rm = TRUE),
+    Avg_Auto_Loan_Rate = mean(as.double(Auto.Rates.48.mo), na.rm = TRUE),
+    Avg_Credit_Card = mean(Credit.Card, na.rm = TRUE),
+    Avg_CC_Rate = mean(as.double(CC.Rates), na.rm = TRUE),
+    Avg_Student_Loan = mean(Student.Loan, na.rm = TRUE),
+    Avg_Student_Loan_Rate = mean(Student.Loan.Rate, na.rm = TRUE)
+  )
+
+p <- plot_ly(data = annual_data, x = ~Year) %>%
+    add_lines(y = ~Avg_Mortgage, name = 'Mortgage Amount', line = list(color = 'blue'), 
+              legendgroup = 'mortgage', text = ~paste('Year:', Year, '<br>', 'Average Annual Mortgage Amount', round(Avg_Mortgage,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Mortgage_Rate, name = 'Mortgage Rate', yaxis = 'y2', line = list(color = 'red'), legendgroup = 'mortgage',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Mortgage Rate', round(Avg_Mortgage_Rate,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Auto_Loan, name = 'Auto Loan Amount', line = list(color = 'green'), legendgroup = 'auto',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Auto Amount', round(Avg_Auto_Loan,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Auto_Loan_Rate, name = 'Auto Loan Rate', yaxis = 'y2', line = list(color = 'orange'), legendgroup = 'auto',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Auto Rate', round(Avg_Auto_Loan_Rate,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Credit_Card, name = 'Credit Card Amount', line = list(color = 'purple'), legendgroup = 'creditcard',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Credit Card Amount', round(Avg_Credit_Card,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_CC_Rate, name = 'Credit Card Rate', yaxis = 'y2', line = list(color = 'magenta'), legendgroup = 'creditcard',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Credit Card Rate', round(Avg_CC_Rate,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Student_Loan, name = 'Student Loan Amount', line = list(color = 'black'), legendgroup = 'studentloan',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Student Loan Amount', round(Avg_Student_Loan,2)), hoverinfo = 'text') %>%
+    add_lines(y = ~Avg_Student_Loan_Rate, name = 'Student Loan Rate', yaxis = 'y2', line = list(color = 'gray'), legendgroup = 'studentloan',
+              text = ~paste('Year:', Year, '<br>', 'Average Annual Student Loan Rate', round(Avg_Student_Loan_Rate,2)), hoverinfo = 'text') %>%
+    layout(
+        title = "Annual Trends in Loan Amounts and Interest Rates",
+        yaxis = list(title = 'Loan Amount ($)', side = 'left'),
+        yaxis2 = list(title = 'Interest Rate (%)', side = 'right', overlaying = 'y'),
+        xaxis = list(title = 'Year'),
+        legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.3),
+        margin = list(l = 50, r = 50, b = 100, t = 100, pad = 4)
+    )
+
+p
+```
+
+## Analysis of Loan Volume and Interest Rates
+
+```{r warning=F}
+
+final.df <- final.df %>%
+  mutate(
+    Mortgage.Rate = as.numeric(Mortgage.Rate),
+    Auto.Rates.48.mo = as.numeric(gsub("[^0-9.]", "", Auto.Rates.48.mo)),  # Removing non-numeric characters if necessary
+    CC.Rates = as.numeric(CC.Rates),
+    Student.Loan.Rate = as.numeric(Student.Loan.Rate)
+  )
+
+final.df.long <- final.df %>%
+  select(Year, Quarter, Mortgage.Rate, Auto.Rates.48.mo, CC.Rates, Student.Loan.Rate,
+         Number.Mortgage, Number.Auto.Loan, Number.Credit.Card, Number.HE.Revolving) %>%
+  pivot_longer(cols = c(Mortgage.Rate, Auto.Rates.48.mo, CC.Rates, Student.Loan.Rate),
+               names_to = "Rate.Type", values_to = "Interest.Rate") %>%
+  pivot_longer(cols = c(Number.Mortgage, Number.Auto.Loan, Number.Credit.Card, Number.HE.Revolving),
+               names_to = "Debt.Type", values_to = "Number.of.Debts")
+
+rate_to_debt_map <- data.frame(
+  Rate.Type = c("Mortgage.Rate", "Auto.Rates.48.mo", "CC.Rates", "Student.Loan.Rate"),
+  Debt.Type = c("Number.Mortgage", "Number.Auto.Loan", "Number.Credit.Card", "Number.HE.Revolving")
+)
+
+final.df.long <- final.df.long %>%
+  left_join(rate_to_debt_map, by = "Rate.Type") %>%
+  filter(Debt.Type.y == Debt.Type.x)
 
 
-## Plot
+ggplot(final.df.long, aes(x = Year, y = Interest.Rate, size = Number.of.Debts)) +
+  geom_point(alpha = 0.3, color = "blue") +
+  facet_wrap(~Rate.Type, scales = "free") +
+  scale_size_continuous(range = c(1, 20)) +
+  labs(title = "Relationship Between Interest Rates and Number of Debts",
+       x = "Year",
+       y = "Interest Rate (%)",
+       size = "Number of Debts") +
+  theme_minimal() +
+  guides(color = guide_legend("Year"))
+```
 
-
-## Interest Rates and 90 Day Deliquency
-
+## Analysis of Loan Delinquency and Interest Rates
 
 ```{r, warning=FALSE}
-
-## Make Mortgage Plot
 mortgage.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Percent.of.Mortgage.90.days.delinquent,
@@ -92,7 +178,6 @@ mortgage.plot <- plot_ly(final.df) %>%
         )
     )
 
-### Make Auto Plot
 auto.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Percent.of.Auto.90.days.delinquent,
@@ -123,7 +208,6 @@ auto.plot <- plot_ly(final.df) %>%
         )
     )
 
-## Make student loan plott
 student.loan.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Percent.of.Student.Loan.90.days.delinquent,
@@ -154,7 +238,6 @@ student.loan.plot <- plot_ly(final.df) %>%
         )
     )
 
-## Make credit card plot
 credit.card.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Percent.of.CC.90.days.delinquent,
@@ -185,7 +268,6 @@ credit.card.plot <- plot_ly(final.df) %>%
         )
     )
 
-#combine plots
 delinq.plot <- subplot(mortgage.plot, credit.card.plot, auto.plot, student.loan.plot, nrows = 4, shareX = T, margin = 0.01, heights = c(.25,.25,.25,.25), widths = .75)
 
 annotations = list( 
@@ -196,7 +278,7 @@ annotations = list(
 
     y = .85,  
 
-    text = "Mortgage Plot",  
+    text = "Mortgage <br> Plot",  
 
     xref = "paper",  
 
@@ -216,7 +298,7 @@ annotations = list(
 
     y = .6,  
 
-    text = "Credit Card Plot",  
+    text = "Credit Card <br> Plot",  
 
     xref = "paper",  
 
@@ -236,7 +318,7 @@ annotations = list(
 
     y = 0.33,  
 
-    text = "Auto Plot",  
+    text = "Auto <br> Plot",  
 
     xref = "paper",  
 
@@ -256,7 +338,7 @@ annotations = list(
 
     y = 0.075,  
 
-    text = "Student Loan Plot",  
+    text = "Student Loan <br> Plot",  
 
     xref = "paper",  
 
@@ -277,3 +359,14 @@ delinq.plot
 ```
 
 
+
+## Conclusion
+
+- Auto Loans seem to heavily dependent on interest rates and move in ways we hypothesized
+- Mortgages, Credit Cards, and Student Loans have more complicated relationships with interest rates. Some ideas for why are...
+    - **Mortgages** - Likely because people need somewhere to live and ability to refinance allow for more complex relationship
+    - **Credit Card** - Consumer spending habits don't depend strongly on interest rates
+    - **Student Loans** - Interest rates aren't a deciding factor in whether people go to school or not
+- Interest Rates and their affect on the economy is complex and not a straightforward relationship
+
+## Questions
