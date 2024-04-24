@@ -78,23 +78,23 @@ annual_data <- final.df %>%
 p <- plot_ly(data = annual_data, x = ~Year) %>%
     add_lines(y = ~Avg_Mortgage, name = 'Mortgage Amount', line = list(color = 'blue'), 
               legendgroup = 'mortgage', text = ~paste('Year:', Year, '<br>', 'Average Annual Mortgage Amount', round(Avg_Mortgage,2)), hoverinfo = 'text') %>%
-    add_lines(y = ~Avg_Mortgage_Rate, name = 'Mortgage Rate', yaxis = 'y2', line = list(color = 'red'), legendgroup = 'mortgage',
+    add_lines(y = ~Avg_Mortgage_Rate, name = 'Mortgage Rate', yaxis = 'y2', line = list(color = 'red'), legendgroup = 'mortgage', linetype = I('dash'),
               text = ~paste('Year:', Year, '<br>', 'Average Annual Mortgage Rate', round(Avg_Mortgage_Rate,2)), hoverinfo = 'text') %>%
     add_lines(y = ~Avg_Auto_Loan, name = 'Auto Loan Amount', line = list(color = 'green'), legendgroup = 'auto',
               text = ~paste('Year:', Year, '<br>', 'Average Annual Auto Amount', round(Avg_Auto_Loan,2)), hoverinfo = 'text') %>%
-    add_lines(y = ~Avg_Auto_Loan_Rate, name = 'Auto Loan Rate', yaxis = 'y2', line = list(color = 'orange'), legendgroup = 'auto',
+    add_lines(y = ~Avg_Auto_Loan_Rate, name = 'Auto Loan Rate', yaxis = 'y2', line = list(color = 'orange'), legendgroup = 'auto', linetype = I('dash'),
               text = ~paste('Year:', Year, '<br>', 'Average Annual Auto Rate', round(Avg_Auto_Loan_Rate,2)), hoverinfo = 'text') %>%
     add_lines(y = ~Avg_Credit_Card, name = 'Credit Card Amount', line = list(color = 'purple'), legendgroup = 'creditcard',
               text = ~paste('Year:', Year, '<br>', 'Average Annual Credit Card Amount', round(Avg_Credit_Card,2)), hoverinfo = 'text') %>%
-    add_lines(y = ~Avg_CC_Rate, name = 'Credit Card Rate', yaxis = 'y2', line = list(color = 'magenta'), legendgroup = 'creditcard',
+    add_lines(y = ~Avg_CC_Rate, name = 'Credit Card Rate', yaxis = 'y2', line = list(color = 'magenta'), legendgroup = 'creditcard', linetype = I('dash'),
               text = ~paste('Year:', Year, '<br>', 'Average Annual Credit Card Rate', round(Avg_CC_Rate,2)), hoverinfo = 'text') %>%
     add_lines(y = ~Avg_Student_Loan, name = 'Student Loan Amount', line = list(color = 'black'), legendgroup = 'studentloan',
               text = ~paste('Year:', Year, '<br>', 'Average Annual Student Loan Amount', round(Avg_Student_Loan,2)), hoverinfo = 'text') %>%
-    add_lines(y = ~Avg_Student_Loan_Rate, name = 'Student Loan Rate', yaxis = 'y2', line = list(color = 'gray'), legendgroup = 'studentloan',
+    add_lines(y = ~Avg_Student_Loan_Rate, name = 'Student Loan Rate', yaxis = 'y2', line = list(color = 'gray'), legendgroup = 'studentloan', linetype = I('dash'),
               text = ~paste('Year:', Year, '<br>', 'Average Annual Student Loan Rate', round(Avg_Student_Loan_Rate,2)), hoverinfo = 'text') %>%
     layout(
         title = "Annual Trends in Loan Amounts and Interest Rates",
-        yaxis = list(title = 'Loan Amount ($)', side = 'left'),
+        yaxis = list(title = 'Loan Amount (Trillions of $)', side = 'left'),
         yaxis2 = list(title = 'Interest Rate (%)', side = 'right', overlaying = 'y'),
         xaxis = list(title = 'Year'),
         legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.3),
@@ -162,7 +162,8 @@ mortgage.plot <- plot_ly(final.df) %>%
               name = 'Percent 90 days delinquent') %>%
     add_lines(x = ~Year.Quarter,
               y = ~Mortgage.Rate,
-              color = I('orange'),
+              color = I('darkorange'),
+              linetype = I('dot'),
               text = ~paste('Type: Mortgage <br>',
                             'Year:', Year, '<br>',
                            'Quarter:', Quarter, '<br>',
@@ -193,6 +194,7 @@ auto.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Auto.Rates.48.mo,
               color = I('red'),
+              linetype = I('dot'),
               text = ~paste('Type: Auto <br>',
                             'Year:', Year, '<br>',
                            'Quarter:', Quarter, '<br>',
@@ -223,6 +225,7 @@ student.loan.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~Student.Loan.Rate,
               color = I('purple'),
+              linetype = I('dot'),
               text = ~paste('Type: Student Loan <br>',
                             'Year:', Year, '<br>',
                            'Quarter:', Quarter, '<br>',
@@ -253,6 +256,7 @@ credit.card.plot <- plot_ly(final.df) %>%
     add_lines(x = ~Year.Quarter,
               y = ~CC.Rates,
               color = I('darkgreen'),
+              linetype = I('dot'),
               text = ~paste('Type: Credit Card <br>',
                             'Year:', Year, '<br>',
                            'Quarter:', Quarter, '<br>',
