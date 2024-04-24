@@ -278,7 +278,7 @@ annotations = list(
 
     y = .85,  
 
-    text = "Mortgage <br> Plot",  
+    text = "Mortgage<br>Plot",  
 
     xref = "paper",  
 
@@ -318,7 +318,7 @@ annotations = list(
 
     y = 0.33,  
 
-    text = "Auto <br> Plot",  
+    text = "Auto<br>Plot",  
 
     xref = "paper",  
 
@@ -338,7 +338,7 @@ annotations = list(
 
     y = 0.075,  
 
-    text = "Student Loan <br> Plot",  
+    text = "Student Loan<br>Plot",  
 
     xref = "paper",  
 
